@@ -3,7 +3,7 @@ flask_socketio
 jinja2
 scapy
 requests
-pymongo
 certifi
 gunicorn
-eventlet
+pymongo[srv] >= 4.3.3
+dnspython
