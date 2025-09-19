@@ -109,23 +109,27 @@ def check_url():
 @app.route('/')
 def dashboard():
     if collection is not None:
-        latest = collection.find_one(sort=[('_id', -1)])
         logs = list(collection.find().sort('_id', -1).limit(50))
-        for log in logs:
-            log.setdefault("time", "N/A")
-            log.setdefault("type", "IP Packet")
-            log.setdefault("source", "Unknown")
-            log.setdefault("target", "Unknown")
-            log.setdefault("severity", "Low")
+
+        traffic_count = len(logs)
+        safe_count = sum(1 for log in logs if log['severity'] == 'Low')
+        threat_count = sum(1 for log in logs if log['severity'] != 'Low')
+
+        traffic = {"value": str(traffic_count), "change": "+0%"}
+        safe_connections = {"value": str(safe_count), "change": "+0%"}
+        threats = {"value": str(threat_count), "change": "+0%"}
+
         return render_template(
-            "main_updated_jinja.html",
-            traffic=latest.get("traffic", {"value": "N/A", "change": "0%"}),
-            safe_connections=latest.get("safe_connections", {"value": "N/A", "change": "0%"}),
-            threats=latest.get("threats", {"value": "N/A", "change": "0%"}),
+            "index.html",
+            traffic=traffic,
+            safe_connections=safe_connections,
+            threats=threats,
             traffic_logs=logs
         )
     else:
-        return "❌ Database connection failed. Cannot load dashboard."
+        return "❌ Database connection failed."
+
+
     
 @app.route('/add-threat', methods=['POST'])
 def add_threat():
