@@ -15,25 +15,29 @@ socketio = SocketIO(app)
 try:
     client = MongoClient(
         "mongodb+srv://ansuhka1528_db_user:Annu1528@cloudshieldids.gwpko52.mongodb.net/?retryWrites=true&w=majority&appName=CloudShieldIDS",
-        tlsCAFile=certifi.where()
+        tls=True,                     # ✅ explicitly enable TLS
+        tlsCAFile=certifi.where()     # ✅ use trusted CA certificates
     )
-    db = client.cloudshield
-    collection = db.traffic_logs
+    db = client["cloudshield"]        # ✅ consistent DB reference
+    collection = db["traffic_logs"]
+
+    # Insert sample data only once
     sample_data = {
         "traffic": {"value": "1,248", "change": "+12%"},
         "safe_connections": {"value": "1,134", "change": "+8%"},
         "threats": {"value": "14", "change": "+3%"}
     }
+
     if collection.count_documents({}) == 0:
         collection.insert_one(sample_data)
-        print("✅ Sample data inserted!")
+        print("✅ Sample data inserted into MongoDB!")
     else:
         print("ℹ️ Collection already has data, skipping insert.")
+
 except Exception as e:
     print("❌ MongoDB connection failed:", e)
-    collection = None
 
-# Thread control
+# Thread control (for packet monitoring later)
 monitoring_thread = None
 stop_sniffing = False
 
