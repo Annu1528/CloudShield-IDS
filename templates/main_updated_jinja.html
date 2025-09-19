@@ -66,6 +66,8 @@
             font-weight: 700;
             background: linear-gradient(90deg, var(--border), var(--safe));
             -webkit-background-clip: text;
+            background-clip: text;
+
             -webkit-text-fill-color: transparent;
         }
         
@@ -638,15 +640,8 @@
 </div>
 </div>
 <div class="controls">
-<button class="btn btn-primary">
-<i class="fas fa-play"></i> Start Monitoring
-                </button>
-<button class="btn btn-alert">
-<i class="fas fa-bell"></i> Alerts
-                </button>
-<button class="btn btn-danger">
-<i class="fas fa-power-off"></i> Shutdown
-                </button>
+  <button onclick="startMonitoring()">Start Monitoring</button>
+  <button onclick="stopMonitoring()">Shutdown</button>
 </div>
 </header>
 <div class="card" style="margin-bottom: 20px;">
@@ -1244,10 +1239,47 @@ fetch('/get-threats')
     })
     .catch(error => {
         console.error('Error loading threats:', error);
+    });</script>
+
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+<script>
+
+  // Handle new traffic log
+  socket.on('new_log', function (log) {
+    console.log('📡 New log received:', log);
+
+    const table = document.querySelector('table');
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+      <td>${log.time}</td>
+      <td>${log.type}</td>
+      <td>${log.source}</td>
+      <td>${log.target}</td>
+      <td>${log.severity}</td>
+    `;
+
+    table.appendChild(row);
+  });
+
+  // Handle new threat alert
+  socket.on('new_threat', function(threat) {
+    alert(`New ${threat.severity.toLowerCase()} severity threat detected: ${threat.type} from ${threat.source}`);
+  });
+
+  // Optional: Load initial threats from server
+  fetch('/get-threats')
+    .then(response => response.json())
+    .then(data => {
+      if (Array.isArray(data)) {
+        // You can populate threat history here if needed
+        console.log("Initial threats:", data);
+      }
+    })
+    .catch(error => {
+      console.error('Error loading threats:', error);
     });
-    </script>
-    
-<script>/cdn.socket.io/4;5;4/socket.io.min.js </script>
+</script>
 
 </body>
 </html>
