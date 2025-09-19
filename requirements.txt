@@ -5,3 +5,5 @@ scapy
 requests
 pymongo
 certifi
+gunicorn
+eventlet
